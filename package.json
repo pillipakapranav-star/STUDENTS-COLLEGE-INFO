@@ -1,0 +1,19 @@
+{
+  "name": "apex-university-student-performance-predictor",
+  "version": "1.0.0",
+  "description": "Student Performance Predictor & Academic Early Warning System with Explainable ML",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node -c server.js sample_data.js ml_engine.js app.js"
+  },
+  "keywords": [
+    "student-success",
+    "machine-learning",
+    "early-warning-system",
+    "ferpa-compliant",
+    "explainable-ai"
+  ],
+  "author": "Apex University Academic Analytics",
+  "license": "ISC"
+}

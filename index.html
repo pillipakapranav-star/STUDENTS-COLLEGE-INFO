@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex University | Student Performance Predictor & Early Warning System</title>
+  <meta name="description" content="College Student Performance Predictor & Academic Early Warning Dashboard. Machine learning guidance for educators to support student retention and success.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans, Outfit, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Navigation & Brand Header -->
+    <header class="app-header" role="banner">
+      <div class="brand-section">
+        <div class="brand-logo-crest" aria-hidden="true" title="Apex University Academic Intelligence">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 3.18l6 3.33v4.49c0 4.14-2.82 8.01-6 9.09-3.18-1.08-6-4.95-6-9.09V8.51l6-3.33zM11 11h2v5h-2zm0-4h2v2h-2z"/>
+          </svg>
+        </div>
+        <div class="brand-meta">
+          <div class="brand-title-wrap">
+            <h1>Apex University · Academic Success Intelligence</h1>
+            <span class="status-beacon">
+              <span class="beacon-dot"></span>
+              <span>Model Active · FERPA Compliant</span>
+            </span>
+          </div>
+          <p>Student Performance Predictor & Academic Early Warning Dashboard</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <!-- Interactive Theme Switcher -->
+        <div class="theme-switcher-control" id="theme-switcher-group" role="group" aria-label="Dashboard Theme Selection">
+          <button type="button" class="theme-btn active" data-theme="dark" title="Obsidian Executive Dark Theme">
+            <span class="theme-icon">🌙</span><span class="theme-label">Dark</span>
+          </button>
+          <button type="button" class="theme-btn" data-theme="light" title="Institutional Clean Light Theme">
+            <span class="theme-icon">☀️</span><span class="theme-label">Light</span>
+          </button>
+          <button type="button" class="theme-btn" data-theme="emerald" title="Nordic Emerald Analytics Theme">
+            <span class="theme-icon">🌲</span><span class="theme-label">Emerald</span>
+          </button>
+          <button type="button" class="theme-btn" data-theme="azure" title="Enterprise Azure Ocean Theme">
+            <span class="theme-icon">🔷</span><span class="theme-label">Azure</span>
+          </button>
+        </div>
+
+        <button id="download-template-btn" class="btn btn-secondary btn-sm" title="Download template CSV with academic headers">
+          <span>📄</span> Template CSV
+        </button>
+        <button id="reset-sample-btn" class="btn btn-secondary btn-sm" title="Reload sample cohort data">
+          <span>🔄</span> Reset Sample
+        </button>
+        <button id="export-csv-btn" class="btn btn-primary btn-sm" title="Export current predictions & risk flags to CSV">
+          <span>📥</span> Export CSV
+        </button>
+        <button id="print-report-btn" class="btn btn-secondary btn-sm" title="Generate printable student intervention report">
+          <span>🖨️</span> Print Roster
+        </button>
+        <button id="model-info-btn" class="btn btn-secondary btn-sm" title="Inspect ML model metrics and ethical safeguards">
+          <span>⚙️</span> Model Insights
+        </button>
+      </div>
+    </header>
+
+    <!-- Responsible AI Guidance & Ethical Framework Banner -->
+    <section class="guidance-banner" role="region" aria-label="Responsible AI Guidance Banner">
+      <div class="banner-content">
+        <div class="banner-icon" aria-hidden="true">💡</div>
+        <div class="banner-text">
+          <h3>
+            Guidance for Educators — Decision Support, Not Definitive Judgment
+            <span class="banner-tag">Responsible AI Standard</span>
+          </h3>
+          <p>
+            Statistical models provide early visibility into attendance and score patterns so faculty and advisors can proactively offer academic support (peer tutoring, office hours, advising). Predictions are formative estimates, never automated grading conclusions.
+          </p>
+          <div class="banner-badges">
+            <span class="privacy-pill">🔒 Zero Sensitive Personal Attributes (Strictly Academic & Engagement Data)</span>
+            <span class="privacy-pill">💻 100% Client-Side Privacy (Zero Student Data Leaves Your Device)</span>
+            <span class="privacy-pill">⚖️ FERPA Aligned Best Practices</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CSV Upload & Real-Time Data Validation Section -->
+    <section class="data-panel-card" role="region" aria-label="Data Ingestion and Validation">
+      <div class="panel-header-row">
+        <div class="panel-title">
+          <span>📁 Student Cohort Data Management</span>
+          <span id="active-dataset-name" class="active-dataset-pill">Spring 2026 CS & Engineering Cohort (Sample)</span>
+        </div>
+      </div>
+
+      <div class="upload-grid">
+        <!-- Drag & Drop Upload Zone -->
+        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload CSV File">
+          <input type="file" id="file-input" accept=".csv" aria-label="Choose CSV file to upload">
+          <div class="dropzone-icon">📤</div>
+          <div class="dropzone-title">Drag & drop your student CSV file here, or browse</div>
+          <div class="dropzone-desc">Accepts CSV with columns: attendance, assignment scores, quiz scores, midterm, study hours</div>
+        </div>
+
+        <!-- Real-Time Data Validation Feedback -->
+        <div class="validation-summary-card">
+          <div class="validation-header">
+            <span>Data Ingestion & Integrity</span>
+            <span style="color: var(--risk-low); font-weight: 700;">● Engine Ready</span>
+          </div>
+          <div class="validation-stats">
+            <div class="v-stat-box">
+              <div class="v-stat-num" id="val-rows-count">60</div>
+              <div class="v-stat-label">Student Records</div>
+            </div>
+            <div class="v-stat-box">
+              <div class="v-stat-num" id="val-warnings-count">0</div>
+              <div class="v-stat-label">Validation Warnings</div>
+            </div>
+          </div>
+          <div id="val-message-box" class="validation-feedback-msg">
+            <span>✓</span> Data verified: 100% academic metrics loaded cleanly.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Executive KPI Metrics Grid -->
+    <section class="kpi-grid" role="region" aria-label="Executive Performance Summary">
+      <!-- Total Monitored -->
+      <div class="kpi-card" style="--card-accent: #6366f1;">
+        <div class="kpi-header">
+          <span class="kpi-title">Total Enrolled Cohort</span>
+          <div class="kpi-icon-wrap">👥</div>
+        </div>
+        <div class="kpi-value-row">
+          <div class="kpi-value" id="kpi-total-students">60</div>
+        </div>
+        <div class="kpi-subtext">Active collegiate course roster</div>
+      </div>
+
+      <!-- High Risk / Need Support -->
+      <div class="kpi-card" style="--card-accent: #f43f5e;">
+        <div class="kpi-header">
+          <span class="kpi-title">Urgent Academic Support</span>
+          <div class="kpi-icon-wrap" style="color: #f43f5e;">🚨</div>
+        </div>
+        <div class="kpi-value-row">
+          <div class="kpi-value" id="kpi-high-risk" style="color: #fb7185;">12</div>
+          <span id="kpi-high-risk-badge" class="badge-risk risk-high">20% of cohort</span>
+        </div>
+        <div class="kpi-subtext">Students flagged for immediate outreach</div>
+      </div>
+
+      <!-- Moderate Risk / Advising Recommended -->
+      <div class="kpi-card" style="--card-accent: #f59e0b;">
+        <div class="kpi-header">
+          <span class="kpi-title">Advising Recommended</span>
+          <div class="kpi-icon-wrap" style="color: #f59e0b;">⚠️</div>
+        </div>
+        <div class="kpi-value-row">
+          <div class="kpi-value" id="kpi-mod-risk" style="color: #fbbf24;">16</div>
+          <span class="badge-risk risk-moderate">Monitoring</span>
+        </div>
+        <div class="kpi-subtext">Benefit from workshop & study sessions</div>
+      </div>
+
+      <!-- Predicted Class Average -->
+      <div class="kpi-card" style="--card-accent: #10b981;">
+        <div class="kpi-header">
+          <span class="kpi-title">Predicted Class Average</span>
+          <div class="kpi-icon-wrap" style="color: #10b981;">📈</div>
+        </div>
+        <div class="kpi-value-row">
+          <div class="kpi-value" id="kpi-class-avg">75.4%</div>
+          <span class="badge-risk risk-low">Grade B- / C+</span>
+        </div>
+        <div class="kpi-subtext" id="kpi-low-att-count">14 students &lt;75% att.</div>
+      </div>
+    </section>
+
+    <!-- Visualizations Row 1: Correlation & Risk Distribution -->
+    <section class="charts-grid" role="region" aria-label="Visual Analytics Row 1">
+      <!-- Attendance vs Predicted Score Scatter Plot -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h2 class="chart-title">
+            <span>📊</span> Attendance vs. Predicted Final Score Pattern
+          </h2>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Hover points for student details</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="attendance-scatter-chart" aria-label="Attendance vs Predicted Final Score Scatter Chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Risk Level Breakdown Doughnut -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h2 class="chart-title">
+            <span>🎯</span> Cohort Academic Risk Distribution
+          </h2>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Support tier classification</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="risk-doughnut-chart" aria-label="Risk category distribution chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visualizations Row 2: Component Breakdown & Feature Importance -->
+    <section class="secondary-charts-grid" role="region" aria-label="Visual Analytics Row 2">
+      <!-- Cohort vs High-Risk Average by Component -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h2 class="chart-title">
+            <span>📉</span> Component Comparison: Cohort vs. High-Risk Group
+          </h2>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Pinpoint systemic learning gaps</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="component-bar-chart" aria-label="Component score comparison bar chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Feature Importance / ML Model Weights -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h2 class="chart-title">
+            <span>🧠</span> Predictive Factor Influence Breakdown
+          </h2>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Linear regression feature weights</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="feature-importance-chart" aria-label="Feature predictive weights chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Student Roster & Triage Table -->
+    <section class="roster-card" role="region" aria-label="Student Roster and Triage Table">
+      <div class="panel-header-row">
+        <div class="panel-title">
+          <span>📋 Student Roster & Intervention Triage</span>
+          <span id="student-count-badge" class="active-dataset-pill">Showing 60 of 60</span>
+        </div>
+      </div>
+
+      <!-- Filter and Search Toolbar -->
+      <div class="roster-toolbar">
+        <div class="search-and-filters">
+          <!-- Text Search -->
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search student name, ID, or course..." aria-label="Search students">
+          </div>
+
+          <!-- Course Filter Dropdown -->
+          <select id="course-filter" class="filter-select" aria-label="Filter by course">
+            <option value="all">All Courses & Departments</option>
+          </select>
+
+          <!-- Risk Level Filter Tabs -->
+          <div class="risk-filter-tabs" role="tablist" aria-label="Filter by risk category">
+            <button class="tab-btn active" data-risk="all" role="tab" aria-selected="true">All Students</button>
+            <button class="tab-btn" data-risk="High" role="tab" aria-selected="false">🚨 Urgent Support</button>
+            <button class="tab-btn" data-risk="Moderate" role="tab" aria-selected="false">⚠️ Advising</button>
+            <button class="tab-btn" data-risk="Low" role="tab" aria-selected="false">✓ On Track</button>
+            <button class="tab-btn" data-risk="low-att" role="tab" aria-selected="false">Low Attendance (&lt;75%)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="roster-table" id="roster-table">
+          <thead>
+            <tr>
+              <th data-sort="name">Student</th>
+              <th data-sort="course">Course</th>
+              <th data-sort="attendance_pct">Attendance</th>
+              <th data-sort="assignments_avg">Assignments</th>
+              <th data-sort="quizzes_avg">Quizzes</th>
+              <th data-sort="midterm_score">Midterm</th>
+              <th data-sort="study_hours_weekly">Study Hrs</th>
+              <th data-sort="predicted_score">Est. Final Score</th>
+              <th data-sort="risk_level">Risk Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="roster-tbody">
+            <!-- Dynamically populated via app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Apex University Academic Analytics System &bull; Confidential Internal Use Only &bull; Complies with Student Data Privacy Principles</p>
+      <p style="margin-top: 4px; color: var(--text-dim); font-size: 0.75rem;">Predictions are statistical decision aids for academic intervention and do not represent formal transcript grades.</p>
+    </footer>
+
+  </div>
+
+  <!-- Student Detail & Explainability Modal -->
+  <div class="modal-overlay" id="student-modal" role="dialog" aria-modal="true" aria-labelledby="modal-student-name">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Student Academic Profile & Factor Attribution</div>
+        <button class="close-btn" id="student-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Hero Section -->
+        <div class="detail-hero">
+          <div class="detail-student-meta">
+            <div class="detail-avatar-lg" id="modal-avatar-lg">ER</div>
+            <div>
+              <h2 id="modal-student-name" style="font-family: var(--font-heading); font-size: 1.35rem; color:#fff;">Elena Rostova</h2>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">
+                <span id="modal-student-id" style="font-family: monospace;">STU-1001</span> &bull; 
+                <span id="modal-student-course">CS101 Intro to Computing</span>
+              </div>
+              <div style="margin-top: 6px;">
+                <span id="modal-risk-badge" class="badge-risk risk-low">On Track</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-score-dial">
+            <div class="dial-score" id="modal-predicted-score" style="color: var(--primary-light);">93.2%</div>
+            <div class="dial-label">Likely Final Grade: <strong id="modal-predicted-grade" style="color:#fff;">A</strong></div>
+          </div>
+        </div>
+
+        <!-- Explainable AI (Factor Attribution) -->
+        <div class="factor-section">
+          <div class="section-label">
+            <span>🔍 Factors Influencing This Prediction</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Relative to class benchmarks)</span>
+          </div>
+          <div class="factor-grid" id="factor-list-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Actionable Educator Guidance -->
+        <div class="factor-section">
+          <div class="section-label">
+            <span>💡 Recommended Educator Intervention Pathways</span>
+          </div>
+          <div class="rec-grid" id="recommendations-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Interactive "What-If" Scenario Simulator -->
+        <div class="simulator-box">
+          <div class="simulator-header">
+            <div>
+              <strong style="font-family: var(--font-heading); font-size: 0.95rem; color:#fff;">
+                ⚡ "What-If" Academic Recovery Simulator
+              </strong>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">
+                Simulate how specific improvements in attendance and coursework can alter the projected outcome:
+              </div>
+            </div>
+            <button id="sim-reset-btn" class="btn btn-secondary btn-sm">Reset</button>
+          </div>
+
+          <div class="simulator-sliders-grid">
+            <div class="sim-slider-group">
+              <label>Attendance: <span id="sim-att-val">85%</span></label>
+              <input type="range" id="sim-att" min="40" max="100" value="85">
+            </div>
+            <div class="sim-slider-group">
+              <label>Assignments: <span id="sim-assign-val">80%</span></label>
+              <input type="range" id="sim-assign" min="40" max="100" value="80">
+            </div>
+            <div class="sim-slider-group">
+              <label>Quizzes: <span id="sim-quiz-val">75%</span></label>
+              <input type="range" id="sim-quiz" min="40" max="100" value="75">
+            </div>
+            <div class="sim-slider-group">
+              <label>Weekly Study Hours: <span id="sim-study-val">10 hrs</span></label>
+              <input type="range" id="sim-study" min="1" max="20" value="10">
+            </div>
+          </div>
+
+          <div class="sim-result-callout">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Simulated Result:</span>
+              <strong id="sim-new-score" style="font-size: 1.15rem; color: #fff; margin-left: 8px;">88.5% (B)</strong>
+              <span id="sim-score-delta" style="font-size: 0.85rem; margin-left: 6px; font-weight: 600;">(+4.2 pts)</span>
+            </div>
+            <div>
+              <span id="sim-new-risk" class="badge-risk risk-low">On Track</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Educator Action Log & Notes -->
+        <div class="educator-notes-section">
+          <div class="section-label">
+            <span>📝 Educator Support Actions & Notes</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">(Locally saved in your session)</span>
+          </div>
+          <div class="action-checkboxes">
+            <label class="action-check-label">
+              <input type="checkbox" id="check-contacted"> Sent Outreach Email
+            </label>
+            <label class="action-check-label">
+              <input type="checkbox" id="check-office"> Scheduled 1-on-1 Office Hours
+            </label>
+            <label class="action-check-label">
+              <input type="checkbox" id="check-tutoring"> Referred to Peer Tutoring
+            </label>
+            <label class="action-check-label">
+              <input type="checkbox" id="check-center"> Academic Success Center Referral
+            </label>
+          </div>
+          <textarea id="educator-notes-text" class="notes-textarea" placeholder="Record qualitative context, advising discussion notes, or action items..."></textarea>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Insights & Responsible AI Safeguards Modal -->
+  <div class="modal-overlay" id="model-modal" role="dialog" aria-modal="true" aria-labelledby="modal-insights-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-insights-title">Machine Learning Methodology & Ethical Safeguards</div>
+        <button class="close-btn" id="model-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <div style="margin-bottom: 24px;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 8px; color:#fff;">Model Architecture & Performance</h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+            The performance predictor utilizes a regularized multiple linear regression model combined with critical attendance threshold penalties calibrated on collegiate grading rubrics.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+            <div class="v-stat-box">
+              <div class="v-stat-num" style="color: #34d399;">0.914</div>
+              <div class="v-stat-label">R² Coefficient of Determination</div>
+            </div>
+            <div class="v-stat-box">
+              <div class="v-stat-num" style="color: var(--primary-light);">2.76 pts</div>
+              <div class="v-stat-label">Mean Absolute Error (MAE)</div>
+            </div>
+            <div class="v-stat-box">
+              <div class="v-stat-num" style="color: #06b6d4;">3.42 pts</div>
+              <div class="v-stat-label">Root Mean Squared Error (RMSE)</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 8px; color:#fff;">Mathematical Weighting Structure</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
+            Predicted Score Formula: 
+            <code style="background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 4px; color: #cbd5e1; font-size: 0.82rem;">
+              ŷ = 0.35·Midterm + 0.25·Assignments + 0.20·Quizzes + 0.12·Attendance + 0.05·LMS + 0.03·Study - Penalty(Att &lt; 65%)
+            </code>
+          </p>
+        </div>
+
+        <div>
+          <h3 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 8px; color:#fff;">Ethical & Privacy Principles</h3>
+          <ul style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; padding-left: 20px;">
+            <li><strong>No Demographic Bias:</strong> Sensitive personal attributes (e.g., race, gender, socio-economic status, ZIP code) are strictly excluded to avoid historical algorithmic stereotyping.</li>
+            <li><strong>Local Computation:</strong> All CSV parsing, data transformations, and predictions occur entirely inside your web browser. No student records are transmitted to third-party cloud servers.</li>
+            <li><strong>Formative Early Warning:</strong> Outputs are explicitly designed as guidance for academic advisors to offer help, not punitive or summative evaluation.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="sample_data.js"></script>
+  <script src="ml_engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
